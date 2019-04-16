@@ -1,0 +1,42 @@
+---
+- hosts: localhost
+  tasks:
+  - name: Install EPEL release for nginx
+    yum: name=epel-release state=present
+  - name: Install Nginx
+    yum: name=nginx state=present
+  - name: start nginx
+    service: name=nginx state=started enabled=yes
+  - name: copy the path
+    copy: src=/opt/index.html dest=/usr/share/nginx/html/
+  - name: Install Multiple packages
+    yum: name={{ item }} state=installed
+    with_items:
+     - php
+     - php-fpm
+     - php-mysql
+     - php-gd
+     - mariadb-server
+     - mariadb
+  - name: start mariadb
+    service: name=mariadb state=started enabled=yes
+  - name: Update mysql root password for all root accounts
+    mysql_user: name=root password=mahesh@123  
+  - name: create database
+    command: mysql -h localhost -u root -p mahesh@123 -e "CREATE DATABASE wordpress"
+  - name: download wordpress page
+    get_url: url=http://wordpress.org/latest.tar.gz dest=/opt/
+  - name: remove nginx default content
+    command: rm -rf /usr/share/nginx/html/*
+  - name: untar
+    unarchive: src=/opt/wordpress-5.1.1.tar.gz dest=/opt/
+  - name: owner permissions
+    command: chown -R root:root /opt/wordpress
+  - name: replace the word
+  - replace:
+    path:/etc/nginx/nginx.conf
+    regexp:"index.html"
+    replace:"index.php"
+  - name: copy the files 
+    copy: src=/opt/wordpress dest=/usr/share/nginx/html/
+  
