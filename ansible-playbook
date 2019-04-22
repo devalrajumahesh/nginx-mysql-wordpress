@@ -7,36 +7,35 @@
     yum: name=nginx state=present
   - name: start nginx
     service: name=nginx state=started enabled=yes
-  - name: copy the path
-    copy: src=/opt/index.html dest=/usr/share/nginx/html/
+  - name: copy the file to nginx congig
+    copy: src=/opt/nginx.conf dest=/etc/nginx/nginx.conf
   - name: Install Multiple packages
     yum: name={{ item }} state=installed
     with_items:
      - php
-     - php-fpm
      - php-mysql
      - php-gd
      - mariadb-server
      - mariadb
   - name: start mariadb
     service: name=mariadb state=started enabled=yes
-  - name: Update mysql root password for all root accounts
-    mysql_user: name=root password=mahesh@123  
-  - name: create database
-    command: mysql -h localhost -u root -p mahesh@123 -e "CREATE DATABASE wordpress"
+  - name: remove the files
+    command: rm -rvf * /usr/share/nginx/html/
+  - name: installing mysql-python
+    yum: name=MySQL-python state=present
+  - name: Creating database
+    mysql_db: name=wordpress state=present
+  - name: Create db User
+    mysql_user: name=root password=Mahesh@123 host=localhost state=present
   - name: download wordpress page
     get_url: url=http://wordpress.org/latest.tar.gz dest=/opt/
-  - name: remove nginx default content
-    command: rm -rf /usr/share/nginx/html/*
   - name: untar
     unarchive: src=/opt/wordpress-5.1.1.tar.gz dest=/opt/
   - name: owner permissions
     command: chown -R root:root /opt/wordpress
-  - name: replace the word
-  - replace:
-    path:/etc/nginx/nginx.conf
-    regexp:"index.html"
-    replace:"index.php"
-  - name: copy the files 
-    copy: src=/opt/wordpress dest=/usr/share/nginx/html/
+  - name: copy the files
+    command: cp -rvf /opt/wordpress /usr/share/nginx/html/
+  - name: copy the files
+    copy: src=/opt/wp-config.php  dest=/usr/share/nginx/html/
+
   
